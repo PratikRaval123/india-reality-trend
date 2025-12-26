@@ -4,22 +4,18 @@ import { NewsItem, GroundingSource } from "../types";
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
 
-/**
- * Fetches real-time real estate data from India using Gemini Search Grounding.
- * Prioritizes actual market moves, policy changes, and infrastructure developments.
- */
-export async function fetchLiveNews(query: string = "current real estate market trends India Oct 2024"): Promise<{ articles: Partial<NewsItem>[], sources: GroundingSource[] }> {
+export async function fetchLiveNews(query: string = "latest breaking real estate news India today"): Promise<{ articles: Partial<NewsItem>[], sources: GroundingSource[] }> {
   try {
+    // We use gemini-3-flash-preview for high speed and search grounding capability.
+    // Note: responseMimeType: "application/json" is NOT compatible with googleSearch grounding.
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `Perform a deep search for the most recent and critical real estate, economy, and infrastructure news in India.
-      Find exactly 6 distinct and verifiable stories. 
-      For each story, provide the data in this EXACT format:
-      
-      TITLE: [Specific Headline]
-      EXCERPT: [Professional 2-sentence summary including specific data points if available]
-      CATEGORY: [Choose ONE: Residential, Commercial, Policy, Economy, Infrastructure]
-      IMAGE_PROMPT: [3 specific visual keywords for architectural photography, e.g., 'mumbai high-rise', 'bangalore office park', 'delhi metro construction']
+      contents: `Find the most recent (last 48 hours) real estate and infrastructure news in India.
+      For each of the top 5 distinct stories, provide the following structure:
+      TITLE: [The headline]
+      EXCERPT: [A concise 2-sentence summary]
+      CATEGORY: [One of: Residential, Commercial, Policy, Economy, Infrastructure]
+      IMAGE_KEY: [2-3 very specific keywords for a high-quality property photo, e.g., 'mumbai skyscrapers', 'modern office bangalore', 'indian highway construction']
       ---`,
       config: {
         tools: [{ googleSearch: {} }],
@@ -36,36 +32,38 @@ export async function fetchLiveNews(query: string = "current real estate market 
         uri: c.web.uri
       }));
 
+    // Robust parsing of the text response
     const articles: Partial<NewsItem>[] = [];
     const sections = text.split('---');
 
     sections.forEach((section) => {
-      const title = section.match(/TITLE:\s*(.*)/i)?.[1]?.trim();
-      const excerpt = section.match(/EXCERPT:\s*(.*)/i)?.[1]?.trim();
-      const category = section.match(/CATEGORY:\s*(.*)/i)?.[1]?.trim();
-      const imagePrompt = section.match(/IMAGE_PROMPT:\s*(.*)/i)?.[1]?.trim() || 'indian architecture';
+      const titleMatch = section.match(/TITLE:\s*(.*)/i);
+      const excerptMatch = section.match(/EXCERPT:\s*(.*)/i);
+      const categoryMatch = section.match(/CATEGORY:\s*(.*)/i);
+      const imageKeyMatch = section.match(/IMAGE_KEY:\s*(.*)/i);
 
-      if (title && excerpt) {
+      if (titleMatch && excerptMatch) {
+        const keyword = (imageKeyMatch?.[1] || 'real estate india').trim().replace(/\s+/g, ',');
         articles.push({
-          id: `live-${Math.random().toString(36).substr(2, 5)}`,
-          title,
-          excerpt,
-          category: category || 'Market Update',
-          // Using keywords for high-quality contextual images
-          imageUrl: `https://loremflickr.com/800/600/architecture,india,building,${imagePrompt.replace(/\s+/g, ',')}`,
+          id: Math.random().toString(36).substr(2, 9),
+          title: titleMatch[1].trim(),
+          excerpt: excerptMatch[1].trim(),
+          category: (categoryMatch?.[1] || 'General').trim(),
+          // Using a high-quality keyword-based image provider to match real-time news context
+          imageUrl: `https://loremflickr.com/800/600/architecture,building,${keyword}`,
           date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
-          author: 'IRT Analytics',
-          readTime: '3 min'
+          author: 'IRT Intelligence',
+          readTime: '4 min'
         });
       }
     });
 
     return { 
-      articles: articles.slice(0, 6), 
+      articles: articles.length > 0 ? articles : [], 
       sources 
     };
   } catch (error) {
-    console.error("Critical error in Live News Service:", error);
+    console.error("Error fetching live news:", error);
     return { articles: [], sources: [] };
   }
 }
