@@ -14,136 +14,103 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const loadLiveUpdates = useCallback(async () => {
+  const loadLiveUpdates = useCallback(async (query?: string) => {
     setIsLoading(true);
-    const result = await fetchLiveNews(searchQuery || undefined);
+    const result = await fetchLiveNews(query || undefined);
     setLiveNews(result.articles);
     setSources(result.sources);
     setIsLoading(false);
-  }, [searchQuery]);
+  }, []);
 
   useEffect(() => {
     loadLiveUpdates();
-  }, []);
+  }, [loadLiveUpdates]);
 
   const navigateTo = (view: View) => {
     setCurrentView(view);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // --- Views ---
+
   const renderHome = () => (
-    <div className="space-y-8 animate-fadeIn">
-      {/* Hero Ad Banner */}
-      <section className="w-full">
-        <div className="bg-[#1a1a1a] w-full min-h-[220px] rounded-sm overflow-hidden relative flex flex-col md:flex-row items-center justify-between shadow-lg group">
-          <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/40 to-transparent z-10"></div>
-          <img 
-            src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?q=80&w=2000&auto=format&fit=crop" 
-            className="absolute inset-0 w-full h-full object-cover grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-70 transition-all duration-1000" 
-            alt="Luxury Real Estate"
-          />
-          <div className="relative z-20 p-8 md:p-12 text-white flex-1">
-            <div className="bg-amber-500 text-black text-[10px] font-black px-2 py-0.5 inline-block mb-3 uppercase tracking-[0.2em] animate-pulse">Live Listing</div>
-            <h2 className="text-3xl md:text-5xl font-black mb-2 tracking-tight uppercase">Skyscrapers of Mumbai</h2>
-            <p className="text-xl text-amber-400 font-bold mb-1 uppercase tracking-tighter">New Launches starting Dec 2025</p>
-            <p className="text-sm opacity-80 italic font-light">Exclusive Pre-Launch Access for IRT Members</p>
+    <div className="space-y-12 animate-fade-in">
+      {/* Premium Hero Banner */}
+      <section className="relative w-full h-[300px] md:h-[400px] overflow-hidden group shadow-2xl">
+        <div className="absolute inset-0 bg-brand-dark/80 z-10"></div>
+        <img 
+          src="https://images.unsplash.com/photo-1590644365607-1c5a519a7a37?q=80&w=2000&auto=format&fit=crop" 
+          className="absolute inset-0 w-full h-full object-cover grayscale opacity-40 group-hover:grayscale-0 group-hover:opacity-60 transition-all duration-1000 scale-105 group-hover:scale-100" 
+          alt="Luxury Real Estate"
+        />
+        <div className="relative z-20 h-full flex flex-col justify-center px-8 md:px-16 text-white">
+          <div className="flex items-center gap-3 mb-6">
+             <span className="bg-brand-red text-white text-[10px] font-black px-3 py-1 uppercase tracking-[0.3em] animate-pulse">Live</span>
+             <span className="text-[10px] font-bold uppercase tracking-widest opacity-60">Market Insight Report • 2025</span>
           </div>
-          <div className="relative z-20 p-8 md:p-12">
-            <button className="bg-amber-500 text-black font-black px-10 py-4 rounded-sm hover:bg-amber-400 transition-all uppercase tracking-widest text-sm shadow-2xl hover:scale-105 transform active:scale-95">
-              Get Invite
-            </button>
+          <h2 className="text-4xl md:text-7xl font-black mb-4 uppercase tracking-tighter leading-[0.9]">The Indian <br/><span className="text-brand-accent italic font-light serif lowercase">Realty</span> Resurgence</h2>
+          <p className="max-w-2xl text-sm md:text-lg text-slate-300 font-light mb-8 leading-relaxed">
+            Real-time grounded intelligence on India's most dynamic property corridors. Tracking over ₹50,000 Cr in active infrastructure developments.
+          </p>
+          <div className="flex gap-4">
+            <button onClick={() => navigateTo('trends')} className="bg-brand-red px-8 py-4 text-[11px] font-black uppercase tracking-widest hover:bg-white hover:text-brand-red transition-all">View Trends</button>
+            <button className="border border-white/30 px-8 py-4 text-[11px] font-black uppercase tracking-widest hover:bg-white/10 transition-all">Investor Portal</button>
           </div>
         </div>
       </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <main className="lg:col-span-9 space-y-8">
-          {/* Search & Status Bar */}
-          <div className="bg-white p-5 border border-slate-200 flex flex-col md:flex-row gap-5 items-center justify-between shadow-sm">
-             <div className="flex gap-3 overflow-x-auto pb-1 max-w-full no-scrollbar">
-              {CATEGORIES.map(cat => (
-                <button
-                  key={cat}
-                  onClick={() => setActiveCategory(cat)}
-                  className={`px-5 py-2 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap border ${
-                    activeCategory === cat 
-                    ? 'bg-slate-900 text-white border-slate-900' 
-                    : 'bg-white text-slate-400 border-slate-100 hover:border-slate-300'
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-            <div className="relative w-full md:w-80">
-              <input 
-                type="text" 
-                placeholder="Search Live Indian Markets..."
-                className="w-full text-xs border border-slate-200 py-3 px-4 pl-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-slate-50 font-medium"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && loadLiveUpdates()}
-              />
-              <svg className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        <main className="lg:col-span-9 space-y-12">
+          {/* Market Status Filter */}
+          <div className="sticky top-[48px] z-30 bg-[#F8F8F8]/90 backdrop-blur-sm py-4 border-b border-slate-200">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+               <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 max-w-full">
+                {CATEGORIES.map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => setActiveCategory(cat)}
+                    className={`px-4 py-2 text-[9px] font-black uppercase tracking-[0.2em] transition-all border ${
+                      activeCategory === cat ? 'bg-brand-dark text-white border-brand-dark' : 'bg-white text-slate-400 border-slate-200 hover:border-slate-400'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+              <div className="relative w-full md:w-64">
+                <input 
+                  type="text" 
+                  placeholder="Filter News..."
+                  className="w-full text-[11px] border border-slate-200 py-2.5 px-4 pl-10 focus:outline-none focus:ring-1 focus:ring-brand-dark"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && loadLiveUpdates(searchQuery)}
+                />
+                <svg className="absolute left-3.5 top-2.5 w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+              </div>
             </div>
           </div>
 
-          {/* Real-Time Live Feed Section */}
-          <div className="space-y-6">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-              <h2 className="text-sm font-black uppercase tracking-[0.2em] text-slate-800 flex items-center gap-2">
-                <span className="w-2 h-2 bg-red-600 rounded-full animate-ping"></span>
-                Real-Time Market Pulse
-              </h2>
-              <button 
-                onClick={loadLiveUpdates}
-                disabled={isLoading}
-                className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest hover:text-indigo-800 transition-colors disabled:opacity-50"
-              >
-                {isLoading ? 'Syncing...' : 'Sync Live Data'}
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* If syncing, show skeleton loaders */}
-              {isLoading && [1, 2, 3, 4, 5, 6].map(i => (
-                <div key={i} className="bg-white h-[400px] animate-pulse border border-slate-200 p-6 space-y-4">
+          {/* News Feed */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {isLoading ? (
+              [1, 2, 3, 4, 5, 6].map(i => (
+                <div key={i} className="bg-white h-[400px] animate-pulse-slow border border-slate-100 p-6 space-y-4">
                   <div className="bg-slate-100 h-48 w-full"></div>
                   <div className="bg-slate-100 h-6 w-3/4"></div>
                   <div className="bg-slate-100 h-20 w-full"></div>
                 </div>
-              ))}
-
-              {/* Show Live News First */}
-              {!isLoading && liveNews.map((item, idx) => (
-                <NewsCard key={`live-${idx}`} news={item} />
-              ))}
-
-              {/* Show Mock News if no live news or to supplement */}
-              {!isLoading && MOCK_NEWS.filter(n => activeCategory === 'All' || n.category === activeCategory).map(item => (
-                <NewsCard key={item.id} news={item} />
-              ))}
-            </div>
+              ))
+            ) : (
+              <>
+                {liveNews.map((news, idx) => <NewsCard key={`live-${idx}`} news={news} />)}
+                {MOCK_NEWS.filter(n => activeCategory === 'All' || n.category === activeCategory).map(news => <NewsCard key={news.id} news={news} />)}
+              </>
+            )}
           </div>
-
-          {/* Verification Footnote */}
-          {sources.length > 0 && (
-            <div className="bg-slate-50 border border-slate-100 p-6 rounded-sm">
-              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Grounded Verification Sources</h4>
-              <div className="flex flex-wrap gap-3">
-                {sources.map((src, i) => (
-                  <a key={i} href={src.uri} target="_blank" rel="noopener noreferrer" className="text-[10px] font-bold text-slate-600 hover:text-indigo-600 underline underline-offset-4 decoration-slate-300">
-                    {src.title}
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
         </main>
-        
-        <aside className="lg:col-span-3 space-y-8">
+
+        <aside className="lg:col-span-3 space-y-10">
           {renderSidebarAds()}
         </aside>
       </div>
@@ -151,28 +118,25 @@ const App: React.FC = () => {
   );
 
   const renderBlog = () => (
-    <div className="space-y-12 animate-fadeIn max-w-5xl mx-auto">
-      <div className="text-center py-16 bg-white border border-slate-100 shadow-sm px-6">
-        <div className="text-[#cc0000] text-[11px] font-black uppercase tracking-[0.4em] mb-4">The Realty Journal</div>
-        <h2 className="text-5xl font-serif font-bold text-slate-900 mb-6">Expert Perspectives</h2>
-        <div className="w-20 h-1 bg-[#cc0000] mx-auto mb-8"></div>
-        <p className="text-slate-500 max-w-2xl mx-auto text-sm leading-relaxed font-light italic">Deep insights into policy, urban development, and investment cycles.</p>
+    <div className="animate-fade-in max-w-5xl mx-auto space-y-16 py-12">
+      <div className="text-center border-b border-brand-dark pb-16">
+        <span className="text-brand-red text-[11px] font-black uppercase tracking-[0.5em] mb-4 block">Archive & Essays</span>
+        <h2 className="text-6xl font-black uppercase tracking-tighter text-brand-dark mb-4">Market <span className="italic serif font-light text-slate-400">Journal</span></h2>
+        <p className="text-slate-500 font-light text-lg">Detailed analysis of the socio-economic factors driving Indian real estate.</p>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
         {[...liveNews, ...MOCK_NEWS].slice(0, 4).map((news, i) => (
-          <div key={i} className="group cursor-pointer bg-white border border-slate-100 p-2 shadow-sm">
-            <div className="aspect-[4/3] overflow-hidden mb-6">
-              <img src={news.imageUrl || `https://loremflickr.com/800/600/india,city,${i}`} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-105" alt="" />
+          <div key={i} className="group cursor-pointer">
+            <div className="aspect-[16/10] overflow-hidden mb-8 bg-slate-100">
+               <img src={news.imageUrl} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-105" alt="" />
             </div>
-            <div className="px-4 pb-6">
-              <span className="text-[#cc0000] text-[10px] font-black uppercase tracking-[0.2em]">{news.category || 'Opinion'}</span>
-              <h3 className="text-2xl font-bold mt-2 mb-4 group-hover:text-indigo-700 transition-colors leading-tight">{news.title}</h3>
-              <p className="text-slate-500 text-[13px] leading-loose line-clamp-3 mb-6 font-light">{news.excerpt}</p>
-              <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-slate-400 pt-4 border-t border-slate-50">
-                <span>By {news.author || 'IRT Editorial'}</span>
-                <span className="text-indigo-600">Read Essay →</span>
-              </div>
+            <div className="flex items-center gap-4 mb-4">
+              <span className="bg-brand-red text-white text-[9px] font-black px-2 py-0.5 uppercase tracking-widest">{news.category}</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{news.date}</span>
             </div>
+            <h3 className="text-3xl font-black uppercase tracking-tight text-brand-dark mb-4 group-hover:text-brand-red transition-colors leading-none">{news.title}</h3>
+            <p className="text-slate-600 font-light leading-relaxed mb-8">{news.excerpt}</p>
+            <button className="text-[10px] font-black uppercase tracking-widest border-b-2 border-brand-dark pb-1 group-hover:text-brand-red group-hover:border-brand-red transition-all">Read Full Essay</button>
           </div>
         ))}
       </div>
@@ -180,83 +144,66 @@ const App: React.FC = () => {
   );
 
   const renderTrends = () => (
-    <div className="space-y-12 animate-fadeIn">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <div className="animate-fade-in space-y-12 py-8">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {[
-          { label: 'Rental Momentum', val: '+5.8%', color: 'text-green-600', desc: 'MoM increase in IT-hub residential leasing.' },
-          { label: 'Interest Rate', val: '6.50%', color: 'text-slate-900', desc: 'RBI Repo rate holding steady for the quarter.' },
-          { label: 'Commercial Absorption', val: '12M SqFt', color: 'text-indigo-600', desc: 'Net absorption across top 7 cities in Q3 2024.' }
+          { label: 'Yield Growth', val: '+4.8%', icon: '📈' },
+          { label: 'Mortgage Rate', val: '8.4%', icon: '🏦' },
+          { label: 'NRIs Investment', val: '+18%', icon: '🌎' },
+          { label: 'Smart City Index', val: '82/100', icon: '🏙️' }
         ].map((stat, i) => (
-          <div key={i} className="bg-white p-10 border border-slate-200 text-center shadow-md relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
-              <svg className="w-20 h-20" fill="currentColor" viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
-            </div>
-            <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 mb-6">{stat.label}</h4>
-            <div className={`text-6xl font-black mb-6 tracking-tighter ${stat.color}`}>{stat.val}</div>
-            <p className="text-xs text-slate-400 leading-relaxed font-medium">{stat.desc}</p>
+          <div key={i} className="bg-white p-8 border border-slate-200 text-center hover:shadow-xl transition-shadow group">
+            <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">{stat.icon}</div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">{stat.label}</p>
+            <div className="text-4xl font-black text-brand-dark">{stat.val}</div>
           </div>
         ))}
       </div>
-
-      <div className="bg-[#1a1a1a] p-12 text-white shadow-2xl">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
-          <div>
-            <span className="text-[#cc0000] text-[10px] font-black uppercase tracking-[0.5em] mb-2 block">Data Analytics</span>
-            <h2 className="text-4xl font-serif italic">Sector Outlook (2025-26)</h2>
-          </div>
-          <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Market Confidence Score: 8.4/10</div>
-        </div>
-        <div className="space-y-10">
-          {[
-            { name: 'Co-Living & Student Housing', growth: 85 },
-            { name: 'Tier 2 Industrial Warehousing', growth: 72 },
-            { name: 'Ultra-Luxury Gated Villas', growth: 94 },
-            { name: 'Data Center Infrastructure', growth: 88 }
-          ].map((sector) => (
-            <div key={sector.name} className="space-y-3">
-              <div className="flex justify-between text-xs font-bold uppercase tracking-widest">
-                <span>{sector.name}</span>
-                <span className="text-amber-500">{sector.growth}% Confidence</span>
-              </div>
-              <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                <div className="h-full bg-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.5)]" style={{ width: `${sector.growth}%` }}></div>
-              </div>
-            </div>
-          ))}
+      <div className="bg-brand-dark p-16 text-white text-center">
+        <h2 className="text-4xl font-serif italic mb-6">Real-Time Data Matrix</h2>
+        <p className="max-w-xl mx-auto text-sm text-slate-400 font-light mb-12 uppercase tracking-widest">Tracking the velocity of demand across 8 major metropolitan clusters.</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-left">
+           {[
+             { name: 'Luxury Villas', demand: 92 },
+             { name: 'Managed Workspaces', demand: 78 },
+             { name: 'Retail Corridors', demand: 65 },
+             { name: 'Eco-Housing', demand: 88 }
+           ].map(item => (
+             <div key={item.name} className="space-y-4">
+               <div className="flex justify-between items-end">
+                 <span className="text-xs font-black uppercase tracking-widest">{item.name}</span>
+                 <span className="text-brand-accent font-bold text-xs">{item.demand}% Velocity</span>
+               </div>
+               <div className="h-0.5 w-full bg-white/10">
+                 <div className="h-full bg-brand-accent shadow-[0_0_10px_rgba(245,158,11,0.5)]" style={{ width: `${item.demand}%` }}></div>
+               </div>
+             </div>
+           ))}
         </div>
       </div>
     </div>
   );
 
   const renderCityGuides = () => (
-    <div className="space-y-12 animate-fadeIn">
-      <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-        <h2 className="text-3xl font-black uppercase tracking-tighter text-slate-900">Regional Portfolios</h2>
-        <div className="text-xs font-bold text-slate-400 uppercase tracking-widest border-b-2 border-slate-200 pb-1">Filter by Tier</div>
+    <div className="animate-fade-in space-y-12 py-8">
+      <div className="flex items-center justify-between">
+        <h2 className="text-4xl font-black uppercase tracking-tighter text-brand-dark">Investment Maps</h2>
+        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">6 Cities Active</span>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
         {[
-          { city: 'Mumbai', zones: 'Worli, BKC, Prabhadevi', price: '₹45k-1L /sqft', img: 'https://images.unsplash.com/photo-1529253355930-ddbe423a2ac7?q=80&w=800&auto=format&fit=crop' },
-          { city: 'Delhi-NCR', zones: 'Noida Exp, Gurugram Sec 103', price: '₹12k-25k /sqft', img: 'https://images.unsplash.com/photo-1585938389612-a552a28d6914?q=80&w=800&auto=format&fit=crop' },
-          { city: 'Bangalore', zones: 'Sarjapur, Hebbal, Indiranagar', price: '₹9k-18k /sqft', img: 'https://images.unsplash.com/photo-1596422846543-b5c65171e939?q=80&w=800&auto=format&fit=crop' },
-          { city: 'Pune', zones: 'Hinjewadi, Baner, Boat Club Road', price: '₹8k-15k /sqft', img: 'https://images.unsplash.com/photo-1562778612-e1e0cda9915c?q=80&w=800&auto=format&fit=crop' },
-          { city: 'Hyderabad', zones: 'Gachibowli, Tellapur, Jubilee Hills', price: '₹7k-14k /sqft', img: 'https://images.unsplash.com/photo-1605649433289-4034870512f4?q=80&w=800&auto=format&fit=crop' },
-          { city: 'Ahmedabad', zones: 'SG Highway, GIFT City, Science City', price: '₹5k-10k /sqft', img: 'https://images.unsplash.com/photo-1626084287283-3397c84a424a?q=80&w=800&auto=format&fit=crop' }
-        ].map((item) => (
-          <div key={item.city} className="bg-white group cursor-pointer shadow-sm hover:shadow-2xl transition-all duration-500 border border-slate-100">
-            <div className="h-72 overflow-hidden relative">
-              <img src={item.img} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" alt={item.city} />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-              <div className="absolute bottom-6 left-6">
-                <h3 className="text-3xl font-black text-white uppercase tracking-tighter mb-1">{item.city}</h3>
-                <span className="text-amber-400 text-[10px] font-black uppercase tracking-widest">{item.price}</span>
-              </div>
-            </div>
-            <div className="p-8">
-              <p className="text-[10px] uppercase font-black text-slate-400 mb-3 tracking-widest">Growth Corridors</p>
-              <p className="text-sm font-bold text-slate-800 mb-6">{item.zones}</p>
-              <button className="w-full py-3 bg-slate-50 text-slate-900 text-[10px] font-black uppercase tracking-widest border border-slate-100 group-hover:bg-slate-900 group-hover:text-white transition-all">Download Quarterly Report</button>
-            </div>
+          { city: 'GIFT City', focus: 'Fintech Hub', img: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=800&auto=format&fit=crop' },
+          { city: 'Navi Mumbai', focus: 'New Airport Cluster', img: 'https://images.unsplash.com/photo-1570160897040-30430ed22114?q=80&w=800&auto=format&fit=crop' },
+          { city: 'Whitefield', focus: 'Tech-Hub Expansion', img: 'https://images.unsplash.com/photo-1596422846543-b5c65171e939?q=80&w=800&auto=format&fit=crop' }
+        ].map((guide, i) => (
+          <div key={i} className="group relative h-[500px] overflow-hidden shadow-xl border border-slate-100">
+             <img src={guide.img} className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt="" />
+             <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-brand-dark/20 to-transparent"></div>
+             <div className="absolute bottom-10 left-10 right-10 text-white">
+                <span className="text-brand-accent text-[9px] font-black uppercase tracking-[0.4em] mb-2 block">{guide.focus}</span>
+                <h3 className="text-4xl font-black uppercase tracking-tighter mb-6 leading-none">{guide.city}</h3>
+                <button className="w-full py-4 bg-white text-brand-dark text-[10px] font-black uppercase tracking-widest hover:bg-brand-red hover:text-white transition-all">Deep Dive Guide</button>
+             </div>
           </div>
         ))}
       </div>
@@ -264,113 +211,76 @@ const App: React.FC = () => {
   );
 
   const renderAbout = () => (
-    <div className="max-w-4xl mx-auto space-y-16 animate-fadeIn py-10">
-      <div className="bg-white border border-slate-200 p-16 shadow-2xl text-center relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-2 h-full bg-[#cc0000]"></div>
-        <div className="w-40 h-40 bg-slate-50 rounded-full mx-auto mb-10 flex items-center justify-center overflow-hidden border-8 border-white shadow-lg">
-           {/* Dynamic image of the developer */}
+    <div className="animate-fade-in max-w-4xl mx-auto space-y-20 py-20">
+      <div className="bg-white border border-slate-100 p-20 shadow-2xl relative overflow-hidden text-center">
+        <div className="absolute top-0 right-0 w-4 h-full bg-brand-red"></div>
+        <div className="w-48 h-48 bg-slate-50 rounded-full mx-auto mb-10 overflow-hidden border-4 border-slate-100 p-2 shadow-inner">
            <img 
               src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400&auto=format&fit=crop" 
-              className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500" 
+              className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700 rounded-full" 
               alt="Pratik Raval" 
            />
         </div>
-        <h2 className="text-5xl font-serif font-bold text-slate-900 mb-3 tracking-tight">Pratik Raval</h2>
-        <p className="text-[#cc0000] font-black uppercase tracking-[0.5em] text-[11px] mb-10">Lead Software Architect</p>
+        <h2 className="text-6xl font-black uppercase tracking-tighter text-brand-dark mb-4">Pratik Raval</h2>
+        <div className="text-brand-red text-[12px] font-black uppercase tracking-[0.5em] mb-12">Lead Software Engineer</div>
         
-        <div className="prose prose-slate max-w-2xl mx-auto text-slate-600 text-sm leading-relaxed font-light mb-12 space-y-6">
+        <div className="prose prose-slate max-w-2xl mx-auto text-slate-500 text-base leading-relaxed font-light mb-12 space-y-6">
           <p>
-            India Realty Trend represents a fusion of <strong>Real-Time Information Retrieval</strong> and <strong>Modern Aesthetic Design</strong>. 
-            Developed by Pratik Raval, this platform utilizes Google's Gemini 3 Flash model to deliver grounded news insights that are accurate and current.
+            India Realty Trend is the culmination of high-end software engineering and deep domain expertise in Indian real estate markets. 
+            Developed by <strong>Pratik Raval</strong>, this platform bridges the gap between raw data and actionable investment intelligence.
           </p>
           <p>
-            Pratik's portfolio is defined by the creation of intelligent, data-driven interfaces that solve real-world complexities. 
-            He believes that high-quality engineering should always be accompanied by uncompromising design excellence.
+            Leveraging <strong>Google's Gemini 3 Flash-Preview</strong>, the system autonomously researches, validates, and visualizes market movements across the subcontinent with sub-second latency.
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-8">
           <a 
             href="https://ravalpratik.vercel.app/" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="bg-slate-900 text-white px-10 py-4 rounded-sm font-black uppercase tracking-widest text-[10px] hover:bg-[#cc0000] transition-all flex items-center gap-3 shadow-xl hover:scale-105"
+            className="bg-brand-dark text-white px-12 py-5 rounded-sm font-black uppercase tracking-widest text-[11px] hover:bg-brand-red transition-all shadow-xl hover:scale-105"
           >
-            Explore Portfolio
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+            Developer Portfolio
           </a>
           <a 
             href="mailto:ravalpratik1@gmail.com" 
-            className="group border-2 border-slate-900 text-slate-900 px-10 py-4 rounded-sm font-black uppercase tracking-widest text-[10px] hover:bg-slate-900 hover:text-white transition-all shadow-md"
+            className="border-2 border-brand-dark text-brand-dark px-12 py-5 rounded-sm font-black uppercase tracking-widest text-[11px] hover:bg-brand-dark hover:text-white transition-all"
           >
-            Contact Developer
+            Collaborate
           </a>
         </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-        {[
-          { label: 'Engineering', val: 'TypeScript / React 19', icon: '⚡' },
-          { label: 'Intelligence', val: 'Gemini Search Grounding', icon: '🧠' },
-          { label: 'Aesthetics', val: 'Tailwind / Typography', icon: '✨' }
-        ].map(item => (
-          <div key={item.label} className="bg-white p-8 border border-slate-100 shadow-sm">
-            <div className="text-3xl mb-4">{item.icon}</div>
-            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">{item.label}</h4>
-            <p className="text-xs font-bold text-slate-800">{item.val}</p>
-          </div>
-        ))}
       </div>
     </div>
   );
 
   const renderSidebarAds = () => (
     <>
-      <div className="bg-white p-5 border border-slate-200 flex flex-col items-center shadow-sm">
-        <span className="text-[8px] text-slate-400 uppercase tracking-widest mb-4 font-black">Advertisement</span>
-        <div className="bg-slate-900 w-full aspect-square relative overflow-hidden group">
-          <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=800&auto=format&fit=crop" className="w-full h-full object-cover opacity-60 group-hover:scale-110 transition-transform duration-1000" alt="Ad" />
-          <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center text-white">
-            <p className="text-amber-400 font-black text-xl mb-2 leading-tight uppercase tracking-tight shadow-sm">Smart City GIFT City</p>
-            <p className="text-[9px] uppercase font-bold tracking-[0.2em] opacity-80 mb-6">India's First Global Fin-Tech Hub</p>
-            <button className="bg-white text-black text-[9px] font-black py-3 px-8 uppercase tracking-widest hover:bg-amber-400 transition-colors">Apply for Allotment</button>
-          </div>
+      <div className="bg-white p-6 border border-slate-200 shadow-sm relative overflow-hidden group">
+        <span className="text-[9px] text-slate-400 uppercase tracking-widest mb-6 block font-black">Advertisement</span>
+        <div className="bg-brand-dark aspect-square relative overflow-hidden">
+           <img src="https://images.unsplash.com/photo-1541746972996-4e0b0f43e02a?q=80&w=800&auto=format&fit=crop" className="w-full h-full object-cover opacity-50 group-hover:scale-110 transition-all duration-1000" alt="Ad"/>
+           <div className="absolute inset-0 p-8 flex flex-col justify-end text-white">
+              <h4 className="text-2xl font-black uppercase tracking-tighter leading-none mb-2">Prime Offices <br/>in BKC</h4>
+              <p className="text-[10px] uppercase font-bold tracking-widest text-brand-accent mb-6">Starting ₹42,000 /mo</p>
+              <button className="w-full py-3 bg-white text-brand-dark text-[9px] font-black uppercase tracking-widest hover:bg-brand-accent transition-colors">Enquire Now</button>
+           </div>
         </div>
       </div>
-      
-      <div className="bg-[#cc0000] p-8 text-white shadow-xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16"></div>
-        <h3 className="text-xl font-black uppercase tracking-tight mb-4 relative z-10">Market Pulse</h3>
-        <p className="text-xs opacity-90 mb-8 leading-relaxed font-light relative z-10">Real-time alerts on policy changes and RERA filings delivered to your inbox.</p>
+      <div className="bg-brand-red p-10 text-white shadow-2xl relative overflow-hidden">
+        <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/5 rounded-full"></div>
+        <h3 className="text-2xl font-black uppercase tracking-tight mb-4 relative z-10">IRT Insider</h3>
+        <p className="text-xs font-light leading-relaxed mb-8 relative z-10 opacity-80 italic">Be the first to receive RERA alerts and bulk-deal news.</p>
         <div className="space-y-4 relative z-10">
-          <input type="email" placeholder="professional@email.com" className="w-full bg-white text-slate-900 rounded-sm py-3 px-4 text-[10px] font-bold uppercase tracking-widest focus:outline-none" />
-          <button className="w-full bg-slate-900 text-white font-black py-3 rounded-sm hover:bg-white hover:text-[#cc0000] transition-all text-[10px] uppercase tracking-widest shadow-lg">Subscribe Free</button>
-        </div>
-      </div>
-
-      <div className="bg-white p-6 border border-slate-200">
-        <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-6 pb-2 border-b border-slate-50">Local Trends</h3>
-        <div className="space-y-5">
-          {[
-            { city: 'GIFT City', val: '+22.4%', up: true },
-            { city: 'Navi Mumbai', val: '+12.1%', up: true },
-            { city: 'Noida Exp.', val: '+8.9%', up: true },
-            { city: 'Whitefield', val: '+14.5%', up: true }
-          ].map(c => (
-            <div key={c.city} className="flex justify-between items-center">
-              <span className="text-xs font-bold text-slate-700">{c.city}</span>
-              <span className={`text-[10px] font-black ${c.up ? 'text-green-600' : 'text-red-600'}`}>
-                {c.up ? '↑' : '↓'} {c.val}
-              </span>
-            </div>
-          ))}
+          <input type="email" placeholder="professional@email.com" className="w-full bg-white/10 border border-white/20 text-white py-3 px-4 text-[10px] font-bold uppercase tracking-widest focus:outline-none focus:bg-white/20 transition-all" />
+          <button className="w-full bg-brand-dark text-white font-black py-4 rounded-sm hover:bg-white hover:text-brand-red transition-all text-[10px] uppercase tracking-widest">Activate Access</button>
         </div>
       </div>
     </>
   );
 
   return (
-    <div className="bg-[#f8f8f8] min-h-screen selection:bg-indigo-100 selection:text-indigo-900 font-sans">
+    <div className="min-h-screen">
       <Navbar currentView={currentView} onNavigate={navigateTo} />
 
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -381,69 +291,52 @@ const App: React.FC = () => {
         {currentView === 'about' && renderAbout()}
       </div>
 
-      <footer className="bg-[#1a1a1a] text-white py-20 mt-24">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-16">
-            <div className="md:col-span-2">
-              <h4 className="text-2xl font-serif italic mb-8 border-l-4 border-[#cc0000] pl-6">India Realty Trend</h4>
-              <p className="text-slate-400 text-xs leading-loose max-w-sm mb-8 font-light">
-                Redefining the standard for property intelligence in the Indian market. Utilizing advanced generative AI to provide a clear, grounded perspective on investment opportunities.
+      <footer className="bg-brand-dark text-white pt-24 pb-12 mt-32">
+        <div className="max-w-7xl mx-auto px-8 md:px-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-20">
+            <div className="md:col-span-2 space-y-8">
+              <h4 className="text-3xl font-serif italic border-l-4 border-brand-red pl-8">India Realty Trend</h4>
+              <p className="text-slate-500 text-sm leading-loose max-w-sm font-light">
+                Redefining the standard for property intelligence in the Indian market. Architected by <strong>Pratik Raval</strong> using next-gen generative AI pipelines.
               </p>
               <div className="flex gap-4">
-                <a href="https://ravalpratik.vercel.app/" target="_blank" rel="noopener" className="bg-white/5 hover:bg-white/10 p-3 rounded-full transition-colors">
-                  <svg className="w-5 h-5 text-amber-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482C19.138 20.161 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
+                <a href="https://ravalpratik.vercel.app/" target="_blank" className="p-3 bg-white/5 rounded-full hover:bg-brand-red transition-all group">
+                   <svg className="w-5 h-5 text-slate-400 group-hover:text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482C19.138 20.161 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
                 </a>
               </div>
             </div>
             <div>
-              <h5 className="text-[11px] font-black uppercase tracking-widest mb-8 text-[#cc0000]">Navigation</h5>
-              <ul className="space-y-5 text-[11px] text-slate-400 uppercase tracking-widest font-bold">
+              <h5 className="text-[11px] font-black uppercase tracking-[0.3em] mb-10 text-brand-red">Network</h5>
+              <ul className="space-y-6 text-[11px] text-slate-500 uppercase tracking-widest font-bold">
                 <li onClick={() => navigateTo('home')} className="hover:text-white cursor-pointer transition-colors">Global Home</li>
                 <li onClick={() => navigateTo('blog')} className="hover:text-white cursor-pointer transition-colors">Research Journal</li>
                 <li onClick={() => navigateTo('trends')} className="hover:text-white cursor-pointer transition-colors">Trend Matrix</li>
-                <li onClick={() => navigateTo('city-guides')} className="hover:text-white cursor-pointer transition-colors">Zone Analysis</li>
-                <li onClick={() => navigateTo('about')} className="hover:text-white cursor-pointer transition-colors">Architect Info</li>
+                <li onClick={() => navigateTo('about')} className="hover:text-white cursor-pointer transition-colors">Developer Portal</li>
               </ul>
             </div>
             <div>
-              <h5 className="text-[11px] font-black uppercase tracking-widest mb-8 text-slate-500">Legal & Press</h5>
-              <ul className="space-y-5 text-[11px] text-slate-400 uppercase tracking-widest font-bold">
-                <li className="hover:text-white cursor-pointer transition-colors">Privacy Framework</li>
-                <li className="hover:text-white cursor-pointer transition-colors">Terms of Engagement</li>
-                <li className="hover:text-white cursor-pointer transition-colors">Brand Assets</li>
+              <h5 className="text-[11px] font-black uppercase tracking-[0.3em] mb-10 text-slate-700">Governance</h5>
+              <ul className="space-y-6 text-[11px] text-slate-500 uppercase tracking-widest font-bold">
+                <li className="hover:text-white cursor-pointer transition-colors">Data Privacy</li>
+                <li className="hover:text-white cursor-pointer transition-colors">API Compliance</li>
+                <li className="hover:text-white cursor-pointer transition-colors">IRT Foundation</li>
                 <li className="hover:text-white cursor-pointer transition-colors">Investor Relations</li>
               </ul>
             </div>
           </div>
-          <div className="mt-20 pt-10 border-t border-white/5 text-[10px] text-slate-500 flex flex-col md:flex-row justify-between items-center gap-6">
-            <p className="font-medium">© 2025 INDIA REALTY TREND. ARCHITECTED BY <a href="https://ravalpratik.vercel.app/" target="_blank" className="text-white hover:text-[#cc0000] border-b border-white/10 transition-all">PRATIK RAVAL</a>.</p>
-            <div className="flex gap-8 uppercase tracking-[0.3em] font-black opacity-40">
-              <span>BOM</span>
-              <span>DEL</span>
-              <span>BLR</span>
-              <span>HYD</span>
-              <span>AMD</span>
-            </div>
+          <div className="mt-24 pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
+             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">
+               © 2025 India Realty Trend. Engineered by <a href="https://ravalpratik.vercel.app/" target="_blank" className="text-brand-red hover:text-white transition-colors">Pratik Raval</a>.
+             </p>
+             <div className="flex gap-10 text-[10px] font-black text-slate-700 uppercase tracking-[0.4em]">
+               <span>BOM</span>
+               <span>DEL</span>
+               <span>BLR</span>
+               <span>HYD</span>
+             </div>
           </div>
         </div>
       </footer>
-
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(15px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-        .no-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        .no-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
     </div>
   );
 };
